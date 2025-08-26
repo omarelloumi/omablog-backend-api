@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.template.defaultfilters import first
 from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+
+from .models import Blog
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -22,8 +24,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         user = get_user_model()
 
-        new_user = user.objects.create(email=email, username=username, first_name=first_name, last_name=last_name)
-
-        new_user.set_password(password)
-        new_user.save()
+        new_user = user.objects.create_user(
+            email=email,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            password=password
+        )
         return new_user
+
+class SimpleAuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'username', 'first_name', 'last_name']
+
+class BlogSerializer(serializers.ModelSerializer):
+    author = SimpleAuthorSerializer(read_only=True)
+    class Meta:
+        model = Blog
+        fields = ['id', 'title', 'slug', 'author', 'category', 'content', 'featured_image', 'published_at', 'created_at', 'updated_at', 'is_draft']
