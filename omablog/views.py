@@ -47,3 +47,12 @@ def update_blog(request, pk):
     return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_blog(request, pk):
+    blog = Blog.objects.get(id=pk)
+    user = request.user
+    if blog.author != user:
+        return Response({'error': 'You are not authorized'}, status=status.HTTP_403_FORBIDDEN)
+    blog.delete()
+    return Response({'message': 'Blog deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
