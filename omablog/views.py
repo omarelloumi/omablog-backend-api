@@ -1,10 +1,12 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Blog
 from .serializers import UserRegistrationSerializer, BlogSerializer, UserUpdateSerializer
+
 
 
 # Create your views here.
@@ -29,9 +31,14 @@ def create_blog(request):
     return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 @api_view(['GET'])
 def show_blogs(request):
+    class BlogPagination(PageNumberPagination):
+        page_size = 1
+
     blogs = Blog.objects.all()
-    serializer = BlogSerializer(blogs, many=True)
-    return Response(serializer.data)
+    paginator = BlogPagination()
+    blogs_page_number = paginator.paginate_queryset(blogs, request)
+    serializer = BlogSerializer(blogs_page_number, many=True)
+    return paginator.get_paginated_response(serializer.data)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
