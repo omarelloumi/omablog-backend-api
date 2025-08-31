@@ -40,6 +40,12 @@ def show_blogs(request):
     serializer = BlogSerializer(blogs_page_number, many=True)
     return paginator.get_paginated_response(serializer.data)
 
+@api_view(['GET'])
+def blog_detail(request, slug):
+    blog = Blog.objects.get(slug=slug)
+    serializer = BlogSerializer(blog)
+    return Response(serializer.data)
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_blog(request, pk):
